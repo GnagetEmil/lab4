@@ -22,12 +22,28 @@ app.post('/identify', (req, res) => {
     res.redirect("/granted")
 })
 
-app.get('identify', (req, res) => {
-    res.render('identify.ejs')
+app.get('/identify', (req, res) => {
+    res.render("identify.ejs")
 })
 
-app.get('/granted', (req, res) => {
+
+
+function authenticateToken(req, res, next) {
+    if (currentKey == "") {
+        res.redirect("/identify")
+    } else if (jwt.verify(currentKey, process.env.ACCESS_TOKEN_SECRET)) {
+        next()
+    } else {
+        res.redirect("/identify")
+    }
+}
+
+app.get('/granted', authenticateToken, (req, res) => {
     res.render("start.ejs")
 })
 
-app.listen(8000)
+
+
+app.listen(8000, () => {
+    console.log("Server is running on port 8000")
+})
