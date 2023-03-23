@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken')
 require('dotenv').config()
 const db = require('./database')
 const bcrypt = require('bcrypt')
+const cookieParser = require('cookie-parser');
 
 app.set('view engine', 'ejs')
 app.use(express.urlencoded({ extended: false }))
@@ -44,7 +45,7 @@ app.get('/identify', (req, res) => {
     res.render("identify.ejs")
 })
 
-app.get('/admin', authenticateToken, async (req, res) => {
+app.get('/admin', authenticateToken, authorizeRole(["admin"]), async (req, res) => {
     users = await db.getUsers();
     res.render("admin.ejs", users)
 })
@@ -59,6 +60,28 @@ function authenticateToken(req, res, next) {
     } else {
         res.redirect("/identify")
     }
+}
+
+function authorizeRole(requiredRoles) {
+    return async (req, res, next) => {
+        try {
+            const user = await getUserFromToken(req);
+
+            if (requiredRoles.includes(user.role)) {
+                next();
+            } else {
+                res.sendStatus(401);
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+}
+async function getUserFromToken(req) {
+    const token = req.cookies.jwt;
+    const decryptedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const user = await db.getUser(decryptedToken.username);
+    return user;
 }
 
 app.get('/granted', authenticateToken, (req, res) => {
