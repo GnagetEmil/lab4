@@ -21,7 +21,7 @@ const defaultUsers = [
     ['admin', 'admin', 'admin', 'admin'],
 ];
 
-defaultUsers.forEach((user) => createUsers(...user));
+defaultUsers.forEach((user) => createDefaultUsers(...user));
 
 app.get('/', (req, res) => {
     res.redirect('/identify');
@@ -34,42 +34,31 @@ app.get('/granted', authenticateToken, (req, res) => {
     res.render('start.ejs');
 });
 
+
 app.get(
     '/student1',
     authenticateToken,
-    authorizeRole(['student1', 'teacher', 'admin']),
+    authenticateRole(['student1', 'teacher', 'admin']),
     (req, res) => {
         res.render('student1.ejs');
     }
 );
 
-app.get(
-    '/student2',
-    authenticateToken,
-    authorizeRole(['student2', 'teacher', 'admin']),
-    async (req, res) => {
-        const user = await getUserFromToken(req)
-        res.render('student2.ejs', { user: user });
-    }
+app.get('/student2', authenticateToken, authenticateRole(['student2', 'teacher', 'admin']), async (req, res) => {
+    const user = await getUserFromToken(req)
+    res.render('student2.ejs', { user: user });
+}
 );
 
-app.get(
-    '/teacher',
-    authenticateToken,
-    authorizeRole(['teacher', 'admin']),
-    (req, res) => {
-        res.render('teacher.ejs');
-    }
+app.get('/teacher', authenticateToken, authenticateRole(['teacher', 'admin']), (req, res) => {
+    res.render('teacher.ejs');
+}
 );
 
-app.get(
-    '/admin',
-    authenticateToken,
-    authorizeRole(['admin']),
-    async (req, res) => {
-        const users = await db.getUsers();
-        res.render('admin.ejs', { users });
-    }
+app.get('/admin', authenticateToken, authenticateRole(['admin']), async (req, res) => {
+    const users = await db.getUsers();
+    res.render('admin.ejs', { users });
+}
 );
 app.post('/identify', async (req, res) => {
     try {
@@ -102,14 +91,10 @@ app.get('/granted', authenticateToken, (req, res) => {
     res.render('start.ejs');
 });
 
-app.get(
-    '/admin',
-    authenticateToken,
-    authorizeRole(['admin']),
-    async (req, res) => {
-        const users = await db.getUsers();
-        res.render('admin.ejs', { users });
-    }
+app.get('/admin', authenticateToken, authenticateRole(['admin']), async (req, res) => {
+    const users = await db.getUsers();
+    res.render('admin.ejs', { users });
+}
 );
 
 function authenticateToken(req, res, next) {
@@ -122,12 +107,12 @@ function authenticateToken(req, res, next) {
     next();
 }
 
-async function createUsers(username, name, role, password) {
+async function createDefaultUsers(username, name, role, password) {
     const encryptedPassword = await bcrypt.hash(password, 10);
     await db.addUser(username, name, role, encryptedPassword);
 }
 
-function authorizeRole(requiredRoles) {
+function authenticateRole(requiredRoles) {
     return async (req, res, next) => {
         try {
             const user = await getUserFromToken(req);
