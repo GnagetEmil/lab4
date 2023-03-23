@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<title>Admin Page</title>
 </head>
+
 <body>
 	<h1>Admin Page</h1>
 	<table>
@@ -17,13 +19,22 @@
 		<tbody>
 			<% users.forEach(function(user) { %>
 				<tr>
-					<td><%= user.userID %></td>
-					<td><%= user.name %></td>
-					<td><%= user.role %></td>
-					<td><%= user.password %></td>
+					<td>
+						<%= user.userID %>
+					</td>
+					<td>
+						<%= user.name %>
+					</td>
+					<td>
+						<%= user.role %>
+					</td>
+					<td>
+						<%= user.password %>
+					</td>
 				</tr>
-			<% }); %>
+				<% }); %>
 		</tbody>
 	</table>
 </body>
+
 </html>
